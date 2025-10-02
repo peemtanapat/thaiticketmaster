@@ -1,6 +1,7 @@
 package dev.peemtanapat.thaiticketmaster.event_api.event;
 
 import jakarta.persistence.*;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,7 +12,9 @@ import java.util.List;
     @Index(name = "idx_event_status", columnList = "event_status"),
     @Index(name = "idx_on_sale_datetime", columnList = "on_sale_datetime")
 })
-public class Event {
+public class Event implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

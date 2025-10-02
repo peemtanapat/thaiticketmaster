@@ -1,10 +1,13 @@
 package dev.peemtanapat.thaiticketmaster.event_api.event;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class EventDTO {
+public class EventDTO implements Serializable {
+
+  private static final long serialVersionUID = 1L;
   private Long id;
   private String name;
   private CategoryDTO category;
@@ -27,7 +30,10 @@ public class EventDTO {
     this.id = event.getId();
     this.name = event.getName();
     this.category = new CategoryDTO(event.getCategory());
-    this.showDateTimes = event.getShowDateTimes();
+    // Create a new ArrayList to avoid lazy initialization issues during
+    // serialization
+    this.showDateTimes = event.getShowDateTimes() != null ? new java.util.ArrayList<>(event.getShowDateTimes())
+        : new java.util.ArrayList<>();
     this.location = event.getLocation();
     this.onSaleDateTime = event.getOnSaleDateTime();
     this.ticketPrice = event.getTicketPrice();
@@ -145,7 +151,9 @@ public class EventDTO {
   }
 
   // Inner DTO for Category
-  public static class CategoryDTO {
+  public static class CategoryDTO implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long id;
     private String name;
     private String description;

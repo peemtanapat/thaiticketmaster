@@ -1,11 +1,14 @@
 package dev.peemtanapat.thaiticketmaster.event_api.event;
 
 import jakarta.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "categories")
-public class Category {
+public class Category implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -11,6 +11,19 @@ spring:
     password: admin
     driver-class-name: org.postgresql.Driver
 
+  # Redis configuration
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      jedis:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+
   jpa:
     hibernate:
       ddl-auto: update # Options: none, validate, update, create, create-drop
