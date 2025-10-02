@@ -1,0 +1,59 @@
+# traefik-values.yaml
+deployment:
+  replicas: 2
+
+service:
+  type: NodePort
+
+# Port configuration
+ports:
+  web:
+    port: 80
+    exposedPort: 80
+    nodePort: 30080
+  websecure:
+    port: 443
+    exposedPort: 443
+    nodePort: 30443
+  traefik:
+    port: 9000
+    exposedPort: 9000
+
+# CRITICAL: Properly enable CRD provider
+providers:
+  kubernetesCRD:
+    enabled: true
+    allowCrossNamespace: true
+    allowExternalNameServices: true
+    allowEmptyServices: false
+  kubernetesIngress:
+    enabled: true
+
+# Enable dashboard
+ingressRoute:
+  dashboard:
+    enabled: true
+
+api:
+  dashboard: true
+  insecure: true
+
+# Detailed logging to debug
+logs:
+  general:
+    level: DEBUG
+  access:
+    enabled: true
+    # format: json
+
+# Explicitly enable providers via additional arguments
+additionalArguments:
+  - "--providers.kubernetescrd=true"
+  - "--providers.kubernetescrd.allowCrossNamespace=true"
+  - "--api.dashboard=true"
+  - "--api.insecure=true"
+  - "--log.level=DEBUG"
+
+# RBAC to ensure Traefik can read CRDs
+rbac:
+  enabled: true

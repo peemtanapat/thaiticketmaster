@@ -1,0 +1,51 @@
+# Service configuration
+service:
+  type: NodePort
+
+# Port configuration
+ports:
+  web:
+    port: 80
+    exposedPort: 80
+    nodePort: 30080
+  websecure:
+    port: 443
+    exposedPort: 443
+    nodePort: 30443
+  traefik:
+    port: 9000
+    exposedPort: 9000
+
+# CRITICAL: Enable providers
+providers:
+  kubernetesCRD:
+    enabled: true
+    allowCrossNamespace: true
+    allowExternalNameServices: true
+  kubernetesIngress:
+    enabled: true
+    allowExternalNameServices: true
+
+# Dashboard
+ingressRoute:
+  dashboard:
+    enabled: true
+
+api:
+  dashboard: true
+  insecure: true
+
+# Logging
+logs:
+  general:
+    level: DEBUG
+  access:
+    enabled: true
+    format: json
+
+# Additional arguments
+additionalArguments:
+  - "--ping"
+  - "--api.dashboard=true"
+  - "--api.insecure=true"
+  - "--log.level=DEBUG"

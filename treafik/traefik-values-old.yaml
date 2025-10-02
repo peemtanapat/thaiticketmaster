@@ -1,0 +1,41 @@
+# values.yaml
+deployment:
+  replicas: 1
+
+service:
+  type: NodePort
+
+ports:
+  web:
+    port: 80
+    nodePort: 30080
+    # exposedPort: 80
+  websecure:
+    port: 443
+    nodePort: 30443
+    # exposedPort: 443
+  traefik:
+    port: 9000
+
+providers:
+  kubernetesCRD:
+    enabled: true
+    allowCrossNamespace: true
+    allowExternalNameServices: true
+    namespaces: [] # Empty array = watch all namespaces
+  kubernetesIngress:
+    enabled: true
+
+logs:
+  general:
+    level: INFO
+  access:
+    enabled: true
+
+ingressRoute:
+  dashboard:
+    enabled: true
+
+additionalArguments:
+  - "--api.insecure=true"
+  - "--providers.kubernetesingress.ingressclass=traefik"

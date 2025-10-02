@@ -19,7 +19,7 @@ spec:
           image: hashicorp/http-echo:latest
           args:
             # text arg will be displayed in the API response
-            - "-text=Event API v1.0"
+            - "-text=Event API v1.0.0"
             - "-listen=:8080"
           ports:
             - containerPort: 8080

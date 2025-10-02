@@ -1,9 +1,0 @@
-# Install MetalLB
-kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.12/config/manifests/metallb-native.yaml
-
-# Wait for MetalLB to be ready
-kubectl wait --namespace metallb-system \
-  --for=condition=ready pod \
-  --selector=app=metallb \
-  --timeout=90s
-  
