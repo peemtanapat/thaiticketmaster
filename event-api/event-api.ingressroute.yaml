@@ -1,0 +1,15 @@
+# event-api.ingressroute.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: event-api-route
+  namespace: event-api
+spec:
+  entryPoints:
+    - web # HTTP traffic on port 80
+  routes:
+    - match: Host(`thaiticketmaster.local`)
+      kind: Rule
+      services:
+        - name: event-api
+          port: 80

@@ -1,0 +1,14 @@
+# event-api.service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-api
+  namespace: event-api
+spec:
+  selector:
+    app: event-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+  type: ClusterIP

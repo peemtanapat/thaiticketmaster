@@ -1,0 +1,25 @@
+# event-api.deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-api
+  namespace: event-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: event-api
+  template:
+    metadata:
+      labels:
+        app: event-api
+    spec:
+      containers:
+        - name: api
+          image: hashicorp/http-echo:latest
+          args:
+            # text arg will be displayed in the API response
+            - "-text=Event API v1.0"
+            - "-listen=:8080"
+          ports:
+            - containerPort: 8080

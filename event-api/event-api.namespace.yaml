@@ -1,0 +1,5 @@
+# event-api.namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: event-api
