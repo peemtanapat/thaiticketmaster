@@ -5,7 +5,7 @@ metadata:
   name: event-api
   namespace: event-api
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: event-api
@@ -16,8 +16,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: event-api:1.0.0
-          imagePullPolicy: Never
+          image: hashicorp/http-echo:latest
           args:
             # text arg will be displayed in the API response
             - "-text=Event API v1.0.0"

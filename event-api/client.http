@@ -1,0 +1,76 @@
+### Variables
+@baseUrl = http://localhost:8080
+@apiPath = /api/v1/events
+
+### Health Check
+GET {{baseUrl}}/api/health
+
+### Get all events
+GET {{baseUrl}}{{apiPath}}
+
+### Get event by ID
+GET {{baseUrl}}{{apiPath}}/1
+
+### Get on-sale events (ordered by show date)
+GET {{baseUrl}}{{apiPath}}/on-sale
+
+### Get events by category (Concerts = 1, Shows = 2, Sports = 3, Exhibitions = 4)
+GET {{baseUrl}}{{apiPath}}/category/1
+
+### Get events by status (ON_SALE, SOLD_OUT, CANCELLED, etc.)
+GET {{baseUrl}}{{apiPath}}/status/ON_SALE
+
+### Create a new event (Admin)
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "name": "Summer Music Festival 2025",
+  "categoryId": 1,
+  "showDateTimes": [
+    "2025-07-15T19:00:00",
+    "2025-07-15T22:00:00"
+  ],
+  "location": "Central Stadium, Bangkok",
+  "onSaleDateTime": "2025-06-01T10:00:00",
+  "ticketPrice": 1500.00,
+  "detail": "A spectacular summer music festival featuring top artists from around the world. Join us for an unforgettable night of music and entertainment.",
+  "condition": "Age 18+. No refunds. No outside food or drinks. Subject to terms and conditions.",
+  "eventStatus": "ON_SALE",
+  "gateOpen": "1 hour before show start"
+}
+
+### Create another event - Sports
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "name": "Thailand Premier League - Final Match",
+  "categoryId": 3,
+  "showDateTimes": [
+    "2025-08-20T18:00:00"
+  ],
+  "location": "Rajamangala National Stadium",
+  "onSaleDateTime": "2025-07-01T09:00:00",
+  "ticketPrice": 800.00,
+  "detail": "Watch the championship finals of Thailand Premier League. Exciting match between the top two teams.",
+  "condition": "All ages welcome. Stadium rules apply.",
+  "eventStatus": "COMING_SOON",
+  "gateOpen": "2 hours before match start"
+}
+
+### Update an event (Admin)
+PUT {{baseUrl}}{{apiPath}}/1
+Content-Type: application/json
+
+{
+  "eventStatus": "SOLD_OUT",
+  "ticketPrice": 2000.00
+}
+
+### Delete an event (Admin)
+DELETE {{baseUrl}}{{apiPath}}/1
+
+### --- Future Feature: Search (Elasticsearch) ---
+### Search events by name
+# GET {{baseUrl}}{{apiPath}}/search?query=festival

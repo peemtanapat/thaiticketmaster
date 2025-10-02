@@ -100,3 +100,14 @@ dev-rebuild:
 show-ingress:
 	@echo "🌐 Ingress Information:"
 	@kubectl get svc -n traefik traefik -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "No LoadBalancer IP assigned yet"
+
+deploy-event-api:
+	@echo "Deploying new version of Event API"
+	docker build -t event-api:1.0.0 event-api/
+	kubectl delete -f event-api/event-api.deployment.yaml --ignore-not-found
+	kubectl apply -f event-api/event-api.deployment.yaml
+	kubectl rollout restart deploy/event-api -n event-api
+# 	kubectl wait --namespace event-api \
+# 		--for=condition=ready pod \
+# 		--selector=app=event-api \
+# 		--timeout=90s

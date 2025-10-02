@@ -1,0 +1,125 @@
+package dev.peemtanapat.thaiticketmaster.event_api.event;
+
+import jakarta.validation.constraints.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+public class EventCreateRequest {
+
+  @NotBlank(message = "Event name is required")
+  @Size(max = 200, message = "Event name must not exceed 200 characters")
+  private String name;
+
+  @NotNull(message = "Category ID is required")
+  private Long categoryId;
+
+  @NotEmpty(message = "At least one show datetime is required")
+  private List<LocalDateTime> showDateTimes;
+
+  @NotBlank(message = "Location is required")
+  @Size(max = 500, message = "Location must not exceed 500 characters")
+  private String location;
+
+  @NotNull(message = "On-sale datetime is required")
+  private LocalDateTime onSaleDateTime;
+
+  @NotNull(message = "Ticket price is required")
+  @DecimalMin(value = "0.0", inclusive = false, message = "Ticket price must be greater than 0")
+  private BigDecimal ticketPrice;
+
+  private String detail;
+
+  private String condition;
+
+  @NotNull(message = "Event status is required")
+  private EventStatus eventStatus;
+
+  @Size(max = 100, message = "Gate open information must not exceed 100 characters")
+  private String gateOpen;
+
+  // Constructors
+  public EventCreateRequest() {
+  }
+
+  // Getters and Setters
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public Long getCategoryId() {
+    return categoryId;
+  }
+
+  public void setCategoryId(Long categoryId) {
+    this.categoryId = categoryId;
+  }
+
+  public List<LocalDateTime> getShowDateTimes() {
+    return showDateTimes;
+  }
+
+  public void setShowDateTimes(List<LocalDateTime> showDateTimes) {
+    this.showDateTimes = showDateTimes;
+  }
+
+  public String getLocation() {
+    return location;
+  }
+
+  public void setLocation(String location) {
+    this.location = location;
+  }
+
+  public LocalDateTime getOnSaleDateTime() {
+    return onSaleDateTime;
+  }
+
+  public void setOnSaleDateTime(LocalDateTime onSaleDateTime) {
+    this.onSaleDateTime = onSaleDateTime;
+  }
+
+  public BigDecimal getTicketPrice() {
+    return ticketPrice;
+  }
+
+  public void setTicketPrice(BigDecimal ticketPrice) {
+    this.ticketPrice = ticketPrice;
+  }
+
+  public String getDetail() {
+    return detail;
+  }
+
+  public void setDetail(String detail) {
+    this.detail = detail;
+  }
+
+  public String getCondition() {
+    return condition;
+  }
+
+  public void setCondition(String condition) {
+    this.condition = condition;
+  }
+
+  public EventStatus getEventStatus() {
+    return eventStatus;
+  }
+
+  public void setEventStatus(EventStatus eventStatus) {
+    this.eventStatus = eventStatus;
+  }
+
+  public String getGateOpen() {
+    return gateOpen;
+  }
+
+  public void setGateOpen(String gateOpen) {
+    this.gateOpen = gateOpen;
+  }
+}

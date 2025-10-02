@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgresql-pvc
+  namespace: event-api
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: hostpath # Add this line
+  resources:
+    requests:
+      storage: 1Gi
