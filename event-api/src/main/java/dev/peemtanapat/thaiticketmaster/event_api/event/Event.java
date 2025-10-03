@@ -121,7 +121,12 @@ public class Event implements Serializable {
   }
 
   public void setShowDateTimes(List<LocalDateTime> showDateTimes) {
-    this.showDateTimes = showDateTimes;
+    // Create a new ArrayList to avoid Hibernate's persistent collection issues
+    this.showDateTimes = new ArrayList<>();
+
+    if (showDateTimes != null) {
+      this.showDateTimes.addAll(showDateTimes);
+    }
   }
 
   public String getLocation() {

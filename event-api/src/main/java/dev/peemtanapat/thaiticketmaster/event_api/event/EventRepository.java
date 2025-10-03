@@ -18,10 +18,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
    */
   @Query("SELECT DISTINCT e FROM Event e " +
       "LEFT JOIN FETCH e.category " +
-      "LEFT JOIN e.showDateTimes st " +
       "WHERE e.eventStatus = 'ON_SALE' " +
       "AND e.onSaleDateTime <= :currentDateTime " +
-      "ORDER BY st ASC")
+      "ORDER BY e.onSaleDateTime ASC")
   List<Event> findOnSaleEventsOrderByShowDate(@Param("currentDateTime") LocalDateTime currentDateTime);
 
   /**
