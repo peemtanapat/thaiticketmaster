@@ -1,0 +1,125 @@
+package booking
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"time"
+)
+
+// BookingRequest represents a ticket booking request
+type BookingRequest struct {
+	EventID  string    `json:"event_id"`
+	UserID   string    `json:"user_id"`
+	Showtime time.Time `json:"showtime"`
+	Quantity int       `json:"quantity"`
+	SeatIDs  []string  `json:"seat_ids"`
+}
+
+// BookingService handles ticket booking operations
+type BookingService struct {
+	locker      Locker
+	txManager   TransactionManager
+	eventClient EventAPIClient
+	lockTTL     time.Duration
+}
+
+// NewBookingService creates a new booking service with proper dependencies
+func NewBookingService(locker Locker, txManager TransactionManager, eventClient EventAPIClient) *BookingService {
+	return &BookingService{
+		locker:      locker,
+		txManager:   txManager,
+		eventClient: eventClient,
+		lockTTL:     30 * time.Second, // Default lock TTL
+	}
+}
+
+// NewBookingServiceWithDefaults creates a booking service with default implementations (for testing)
+func NewBookingServiceWithDefaults(db *sql.DB, redisClient interface{}, eventAPIURL string) *BookingService {
+	var locker Locker = &noOpLocker{}
+	var txManager TransactionManager = &noOpTxManager{}
+	var eventClient EventAPIClient = NewHTTPEventAPIClient(eventAPIURL)
+
+	if db != nil {
+		txManager = NewSQLTransactionManager(db)
+	}
+
+	return NewBookingService(locker, txManager, eventClient)
+}
+
+// BookTickets implements the ticket booking flow with:
+// 1. Acquire distributed lock
+// 2. Start DB transaction
+// 3. Validate booking rules (check event exists and showtime matches)
+// 4. Commit transaction on success
+func (s *BookingService) BookTickets(ctx context.Context, req BookingRequest) error {
+	// Step 1: Acquire distributed lock
+	lockKey := fmt.Sprintf("booking:lock:%s", req.EventID)
+	if err := s.locker.AcquireLock(ctx, lockKey, s.lockTTL); err != nil {
+		return fmt.Errorf("failed to acquire lock: %w", err)
+	}
+	defer s.locker.ReleaseLock(ctx, lockKey)
+
+	// Step 2: Start DB transaction
+	tx, err := s.txManager.BeginTx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to start transaction: %w", err)
+	}
+	defer tx.Rollback() // Rollback if not committed
+
+	// Step 3: Validate booking rules - check event exists and showtime matches
+	event, err := s.eventClient.GetEvent(ctx, req.EventID)
+	if err != nil {
+		return fmt.Errorf("failed to get event: %w", err)
+	}
+
+	if err := s.validateShowtime(req.Showtime, event.Showtime); err != nil {
+		return err
+	}
+
+	// Additional validation
+	if err := s.validateBookingRequest(req); err != nil {
+		return err
+	}
+
+	// Step 4: Commit transaction on success
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+// Event represents the event data from event-api
+type Event struct {
+	ID       string    `json:"id"`
+	Name     string    `json:"name"`
+	Showtime time.Time `json:"showtime"`
+	Venue    string    `json:"venue"`
+} // validateShowtime checks if the booking showtime matches the event showtime
+func (s *BookingService) validateShowtime(bookingShowtime, eventShowtime time.Time) error {
+	// Compare times (truncate to seconds to avoid microsecond differences)
+	if !bookingShowtime.Truncate(time.Second).Equal(eventShowtime.Truncate(time.Second)) {
+		return fmt.Errorf("showtime mismatch: booking=%s, event=%s",
+			bookingShowtime.Format(time.RFC3339),
+			eventShowtime.Format(time.RFC3339))
+	}
+	return nil
+}
+
+// validateBookingRequest validates the booking request
+func (s *BookingService) validateBookingRequest(req BookingRequest) error {
+	if req.EventID == "" {
+		return fmt.Errorf("event_id is required")
+	}
+	if req.UserID == "" {
+		return fmt.Errorf("user_id is required")
+	}
+	if req.Quantity <= 0 {
+		return fmt.Errorf("quantity must be positive")
+	}
+	if len(req.SeatIDs) != req.Quantity {
+		return fmt.Errorf("number of seats must match quantity")
+	}
+	return nil
+}
