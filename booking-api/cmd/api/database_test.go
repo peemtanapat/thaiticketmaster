@@ -24,7 +24,7 @@ func TestEnsureDatabaseExists(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	// Test database configuration - use environment variables or defaults
+	// Arrange
 	host := getEnvOrDefault("DB_HOST", "localhost")
 	port := getEnvOrDefault("DB_PORT", "5432")
 	user := getEnvOrDefault("DB_USER", "admin")
@@ -36,13 +36,13 @@ func TestEnsureDatabaseExists(t *testing.T) {
 		dropTestDatabase(host, port, user, password, testDBName)
 	}()
 
-	// Test creating database
+	// Act
 	err := ensureDatabaseExists(host, port, user, password, testDBName)
 	if err != nil {
 		t.Fatalf("Failed to ensure database exists: %v", err)
 	}
 
-	// Verify database was created
+	// Assert
 	exists, err := databaseExists(host, port, user, password, testDBName)
 	if err != nil {
 		t.Fatalf("Failed to check if database exists: %v", err)
@@ -65,7 +65,7 @@ func TestCreateBookingSchema(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	// Use test database
+	// Arrange
 	testDBName := "booking_api_schema_test"
 
 	host := getEnvOrDefault("DB_HOST", "localhost")
@@ -93,13 +93,13 @@ func TestCreateBookingSchema(t *testing.T) {
 	}
 	defer db.Close()
 
-	// Test schema creation
+	// Act
 	err = createBookingSchema(db)
 	if err != nil {
 		t.Fatalf("Failed to create schema: %v", err)
 	}
 
-	// Verify tables exist
+	// Assert
 	tables := []string{"bookings", "booking_seats"}
 	for _, table := range tables {
 		var exists bool

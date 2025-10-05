@@ -39,3 +39,9 @@ func (t *sqlTransaction) Commit() error {
 func (t *sqlTransaction) Rollback() error {
 	return t.tx.Rollback()
 }
+
+// GetSQLTx returns the underlying *sql.Tx
+// This is used by repository to execute queries within the transaction
+func (t *sqlTransaction) GetSQLTx() *sql.Tx {
+	return t.tx
+}

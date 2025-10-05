@@ -23,7 +23,7 @@ Content-Type: application/json
   "userId": "user-123",
   "showtime": "2025-10-05T02:00:00Z",
   "quantity": 2,
-  "seatIds": ["A1", "A2"]
+  "seatIds": ["A1", "A3"]
 }
 
 ### Create a new booking - LocalDateTime format (no timezone)

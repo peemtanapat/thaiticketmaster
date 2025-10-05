@@ -33,3 +33,30 @@ func (t *noOpTx) Commit() error {
 func (t *noOpTx) Rollback() error {
 	return nil
 }
+
+// noOpRepository is a no-op repository for testing
+type noOpRepository struct{}
+
+func (r *noOpRepository) CreateBooking(ctx context.Context, tx Transaction, booking *Booking) error {
+	return nil
+}
+
+func (r *noOpRepository) GetBookingByID(ctx context.Context, bookingID string) (*Booking, error) {
+	return nil, nil
+}
+
+func (r *noOpRepository) GetBookingsByUserID(ctx context.Context, userID string) ([]*Booking, error) {
+	return nil, nil
+}
+
+func (r *noOpRepository) UpdateBookingStatus(ctx context.Context, bookingID string, status string) error {
+	return nil
+}
+
+func (r *noOpRepository) DeleteBooking(ctx context.Context, bookingID string) error {
+	return nil
+}
+
+func (r *noOpRepository) CheckSeatsAvailability(ctx context.Context, tx Transaction, eventID string, showtime time.Time, seatIDs []string) ([]string, error) {
+	return []string{}, nil // Return empty list (all seats available) for testing
+}

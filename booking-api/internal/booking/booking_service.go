@@ -21,15 +21,17 @@ type BookingService struct {
 	locker      Locker
 	txManager   TransactionManager
 	eventClient EventAPIClient
+	repository  BookingRepository
 	lockTTL     time.Duration
 }
 
 // NewBookingService creates a new booking service with proper dependencies
-func NewBookingService(locker Locker, txManager TransactionManager, eventClient EventAPIClient) *BookingService {
+func NewBookingService(locker Locker, txManager TransactionManager, eventClient EventAPIClient, repository BookingRepository) *BookingService {
 	return &BookingService{
 		locker:      locker,
 		txManager:   txManager,
 		eventClient: eventClient,
+		repository:  repository,
 		lockTTL:     30 * time.Second, // Default lock TTL
 	}
 }
@@ -39,12 +41,14 @@ func NewBookingServiceWithDefaults(db *sql.DB, redisClient interface{}, eventAPI
 	var locker Locker = &noOpLocker{}
 	var txManager TransactionManager = &noOpTxManager{}
 	var eventClient EventAPIClient = NewHTTPEventAPIClient(eventAPIURL)
+	var repository BookingRepository = &noOpRepository{}
 
 	if db != nil {
 		txManager = NewSQLTransactionManager(db)
+		repository = NewPostgresBookingRepository(db)
 	}
 
-	return NewBookingService(locker, txManager, eventClient)
+	return NewBookingService(locker, txManager, eventClient, repository)
 }
 
 // BookTickets implements the ticket booking flow with:
@@ -82,7 +86,31 @@ func (s *BookingService) BookTickets(ctx context.Context, req BookingRequest) er
 		return err
 	}
 
-	// Step 4: Commit transaction on success
+	// Step 4: Check seat availability (prevent duplicate bookings)
+	bookedSeats, err := s.repository.CheckSeatsAvailability(ctx, tx, req.EventID, req.Showtime, req.SeatIDs)
+	if err != nil {
+		return fmt.Errorf("failed to check seat availability: %w", err)
+	}
+
+	if len(bookedSeats) > 0 {
+		return fmt.Errorf("seats already booked: %v", bookedSeats)
+	}
+
+	// Step 5: Save booking to database
+	booking := &Booking{
+		EventID:  req.EventID,
+		UserID:   req.UserID,
+		Showtime: req.Showtime,
+		Quantity: req.Quantity,
+		SeatIDs:  req.SeatIDs,
+		Status:   "CONFIRMED",
+	}
+
+	if err := s.repository.CreateBooking(ctx, tx, booking); err != nil {
+		return fmt.Errorf("failed to create booking: %w", err)
+	}
+
+	// Step 6: Commit transaction on success
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("failed to commit transaction: %w", err)
 	}

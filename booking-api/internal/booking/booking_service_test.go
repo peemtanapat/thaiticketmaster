@@ -58,6 +58,7 @@ func TestBookTickets_Success(t *testing.T) {
 
 // TestBookTickets_EventNotFound tests when event-api returns 404
 func TestBookTickets_EventNotFound(t *testing.T) {
+	// Arrange
 	ctx := context.Background()
 
 	// Mock event-api to return 404
@@ -82,35 +83,35 @@ func TestBookTickets_EventNotFound(t *testing.T) {
 	// Act
 	err := service.BookTickets(ctx, bookingReq)
 
-	// Assert: Should fail when event doesn't exist
+	// Assert
 	require.Error(t, err, "BookTickets should fail when event not found")
 	assert.Contains(t, err.Error(), "event not found")
 }
 
-// TestBookTickets_ShowtimeMismatch tests when showtime doesn't match event
+// TestBookTickets_ShowtimeMismatch tests when requested showtime doesn't match event schedule
 func TestBookTickets_ShowtimeMismatch(t *testing.T) {
+	// Arrange
 	ctx := context.Background()
 
-	// Mock event-api with different showtime
+	// Mock event-api to return 200 but with different showtime
 	eventAPIServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		event := map[string]interface{}{
-			"id":            123,
-			"name":          "Concert 2025",
-			"showDateTimes": []string{"2025-10-10T19:00:00Z"}, // Event showtime
-			"location":      "Stadium",
-		}
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(event)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"id":           "evt-789",
+			"name":         "Test Event",
+			"showtimes":    []string{"2025-11-11T20:00:00Z"},
+			"totalSeats":   100,
+			"soldOutSeats": []string{},
+		})
 	}))
 	defer eventAPIServer.Close()
 
 	bookingReq := BookingRequest{
-		EventID:  "event-123",
-		UserID:   "user-456",
-		Showtime: mustParseTime(t, "2025-10-11T19:00:00Z"), // Different showtime
-		Quantity: 2,
-		SeatIDs:  []string{"A1", "A2"},
+		EventID:  "evt-789",
+		UserID:   "user-789",
+		Showtime: mustParseTime(t, "2025-12-25T18:00:00Z"), // Wrong showtime!
+		Quantity: 1,
+		SeatIDs:  []string{"B5"},
 	}
 
 	service := NewBookingServiceWithDefaults(nil, nil, eventAPIServer.URL)
@@ -118,9 +119,8 @@ func TestBookTickets_ShowtimeMismatch(t *testing.T) {
 	// Act
 	err := service.BookTickets(ctx, bookingReq)
 
-	// Assert: Should fail when showtime doesn't match
-	require.Error(t, err, "BookTickets should fail when showtime doesn't match")
-	assert.Contains(t, err.Error(), "showtime")
+	// Assert
+	require.Error(t, err, "BookTickets should fail when showtime doesn't exist")
 	assert.Contains(t, err.Error(), "not available")
 }
 

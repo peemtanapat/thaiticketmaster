@@ -78,8 +78,10 @@ func main() {
 	locker := booking.NewRedisLocker(redisClient)
 	txManager := booking.NewSQLTransactionManager(db)
 	eventClient := booking.NewHTTPEventAPIClient(eventAPIURL)
+	bookingRepository := booking.NewPostgresBookingRepository(db)
 
-	bookingService := booking.NewBookingService(locker, txManager, eventClient)
+	// Initialize booking service
+	bookingService := booking.NewBookingService(locker, txManager, eventClient, bookingRepository)
 
 	// Setup HTTP server
 	mux := http.NewServeMux()
