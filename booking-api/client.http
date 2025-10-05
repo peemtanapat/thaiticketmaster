@@ -1,0 +1,330 @@
+### Variables
+@baseUrl = http://localhost:8081
+@apiPath = /api/v1/bookings
+@eventApiUrl = http://localhost:8080
+
+### Health Check
+GET {{baseUrl}}/health
+
+### ============================================
+### BOOKING API - TDD Implementation
+### ============================================
+### NOTE: Timestamps support multiple formats:
+###   - RFC3339 with timezone: "2025-07-15T19:00:00Z" or "2025-07-15T19:00:00+07:00"
+###   - Java LocalDateTime format: "2025-07-15T19:00:00" (no timezone)
+### ============================================
+
+### Create a new booking (Happy Path) - RFC3339 format
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "eventId": "1",
+  "userId": "user-123",
+  "showtime": "2025-10-05T02:00:00Z",
+  "quantity": 2,
+  "seatIds": ["A1", "A2"]
+}
+
+### Create a new booking - LocalDateTime format (no timezone)
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "eventId": "1",
+  "userId": "user-123",
+  "showtime": "2025-07-15T19:00:00",
+  "quantity": 2,
+  "seatIds": ["A1", "A2"]
+}
+
+### Create booking for multiple seats
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "eventId": "1",
+  "userId": "user-456",
+  "showtime": "2025-07-15T19:00:00Z",
+  "quantity": 4,
+  "seatIds": ["B1", "B2", "B3", "B4"]
+}
+
+### Create booking for sports event
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "eventId": "2",
+  "userId": "user-789",
+  "showtime": "2025-08-20T18:00:00Z",
+  "quantity": 2,
+  "seatIds": ["VIP1", "VIP2"]
+}
+
+### ============================================
+### ERROR SCENARIOS (for testing validation)
+### ============================================
+
+### Invalid: Event not found
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "eventId": "non-existent-event",
+  "userId": "user-123",
+  "showtime": "2025-07-15T19:00:00Z",
+  "quantity": 2,
+  "seatIds": ["A1", "A2"]
+}
+
+### Invalid: Showtime mismatch
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "eventId": "1",
+  "userId": "user-123",
+  "showtime": "2025-07-16T19:00:00Z",
+  "quantity": 2,
+  "seatIds": ["A1", "A2"]
+}
+
+### Invalid: Missing eventId
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "userId": "user-123",
+  "showtime": "2025-07-15T19:00:00Z",
+  "quantity": 2,
+  "seatIds": ["A1", "A2"]
+}
+
+### Invalid: Missing userId
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "eventId": "1",
+  "showtime": "2025-07-15T19:00:00Z",
+  "quantity": 2,
+  "seatIds": ["A1", "A2"]
+}
+
+### Invalid: Zero quantity
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "eventId": "1",
+  "userId": "user-123",
+  "showtime": "2025-07-15T19:00:00Z",
+  "quantity": 0,
+  "seatIds": []
+}
+
+### Invalid: Seat count mismatch
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "eventId": "1",
+  "userId": "user-123",
+  "showtime": "2025-07-15T19:00:00Z",
+  "quantity": 2,
+  "seatIds": ["A1", "A2", "A3"]
+}
+
+### ============================================
+### FUTURE ENDPOINTS (to be implemented)
+### ============================================
+
+### Get booking by ID
+# GET {{baseUrl}}{{apiPath}}/booking-123
+
+### Get user's bookings
+# GET {{baseUrl}}{{apiPath}}/user/user-123
+
+### Get bookings for an event
+# GET {{baseUrl}}{{apiPath}}/event/1
+
+### Cancel a booking
+# DELETE {{baseUrl}}{{apiPath}}/booking-123
+
+### Update booking seats
+# PATCH {{baseUrl}}{{apiPath}}/booking-123
+# Content-Type: application/json
+# 
+# {
+#   "seatIds": ["A3", "A4"]
+# }
+
+### ============================================
+### CONCURRENT BOOKING TEST
+### ============================================
+### Test distributed locking by sending multiple requests simultaneously
+### (Use REST Client extension's "Send Request" multiple times quickly)
+
+### Concurrent Booking Attempt 1
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "eventId": "1",
+  "userId": "concurrent-user-1",
+  "showtime": "2025-07-15T19:00:00Z",
+  "quantity": 1,
+  "seatIds": ["C1"]
+}
+
+### Concurrent Booking Attempt 2
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "eventId": "1",
+  "userId": "concurrent-user-2",
+  "showtime": "2025-07-15T19:00:00Z",
+  "quantity": 1,
+  "seatIds": ["C1"]
+}
+
+### ============================================
+### INTEGRATION WITH EVENT-API
+### ============================================
+### These requests verify event existence before booking
+
+### Check event exists in event-api (should return 200)
+GET {{eventApiUrl}}/api/v1/events/1
+
+### Check event not found in event-api (should return 404)
+GET {{eventApiUrl}}/api/v1/events/non-existent
+
+### Get event details with showtime
+GET {{eventApiUrl}}/api/v1/events/1
+Accept: application/json
+
+### ============================================
+### TDD TEST SCENARIOS
+### ============================================
+### These map to the test cases in booking_service_test.go
+
+### TestBookTickets_Success
+### Expected: 200 OK, booking created
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "eventId": "event-123",
+  "userId": "user-456",
+  "showtime": "2025-10-10T19:00:00Z",
+  "quantity": 2,
+  "seatIds": ["A1", "A2"]
+}
+
+### TestBookTickets_EventNotFound
+### Expected: 404 or 400, error message contains "event not found"
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "eventId": "non-existent",
+  "userId": "user-456",
+  "showtime": "2025-10-10T19:00:00Z",
+  "quantity": 2,
+  "seatIds": ["A1", "A2"]
+}
+
+### TestBookTickets_ShowtimeMismatch
+### Expected: 400, error message contains "showtime mismatch"
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "eventId": "event-123",
+  "userId": "user-456",
+  "showtime": "2025-10-11T19:00:00Z",
+  "quantity": 2,
+  "seatIds": ["A1", "A2"]
+}
+
+### ============================================
+### REDIS & DATABASE VERIFICATION
+### ============================================
+
+### Check if booking lock is working
+### Send these two requests quickly to test distributed locking
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "eventId": "lock-test-event",
+  "userId": "lock-user-1",
+  "showtime": "2025-10-10T19:00:00Z",
+  "quantity": 1,
+  "seatIds": ["LOCK1"]
+}
+
+###
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "eventId": "lock-test-event",
+  "userId": "lock-user-2",
+  "showtime": "2025-10-10T19:00:00Z",
+  "quantity": 1,
+  "seatIds": ["LOCK1"]
+}
+
+### ============================================
+### LOAD TESTING SAMPLES
+### ============================================
+
+### High volume booking (test performance)
+POST {{baseUrl}}{{apiPath}}
+Content-Type: application/json
+
+{
+  "eventId": "1",
+  "userId": "load-test-user-{{$randomInt}}",
+  "showtime": "2025-07-15T19:00:00Z",
+  "quantity": 1,
+  "seatIds": ["LOAD-{{$randomInt}}"]
+}
+
+### ============================================
+### NOTES FOR DEVELOPERS
+### ============================================
+# 
+# TDD Implementation Status:
+# ✅ BookTickets - Distributed lock, transaction, event validation
+# ✅ Event API integration with HTTP client
+# ✅ Showtime validation
+# ✅ Input validation (eventId, userId, quantity, seatIds)
+# 
+# Current Test Coverage: 59.7%
+# 
+# To run tests:
+#   make test
+#   make test-coverage
+# 
+# To start the server:
+#   make run
+# 
+# To build:
+#   make build
+# 
+# Prerequisites:
+#   - PostgreSQL running on localhost:5432
+#   - Redis running on localhost:6379
+#   - Event API running on localhost:8080
+# 
+# Environment variables (.env):
+#   DB_HOST=localhost
+#   DB_PORT=5432
+#   REDIS_HOST=localhost
+#   REDIS_PORT=6379
+#   EVENT_API_URL=http://localhost:8080
+#   SERVER_PORT=8081

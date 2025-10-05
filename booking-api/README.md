@@ -24,12 +24,14 @@ make build
 
 ## ✨ Features
 
+- ✅ **Automatic Database Setup** - Creates database and schema on startup
 - ✅ **Distributed Locking** using Redis
 - ✅ **PostgreSQL Transaction Management** (ACID compliant)
 - ✅ **Event API Integration** via HTTP client
 - ✅ **Test-Driven Development** (TDD) approach
-- ✅ **59.7% Test Coverage** with comprehensive unit tests
+- ✅ **68.4% Test Coverage** with comprehensive unit tests
 - ✅ **Clean Architecture** with interface segregation
+- ✅ **REST API Endpoints** with proper error handling
 
 ## 🧪 TDD Implementation
 
@@ -111,8 +113,29 @@ booking-api/
 
 ### Prerequisites
 - Go 1.20+
+- PostgreSQL 12+ (for database)
+- Redis (for distributed locking)
 - Make (optional but recommended)
 - Docker (for containerization)
+
+### Database Setup
+
+**The application automatically creates the database and schema on startup!**
+
+See **[DATABASE_SETUP.md](./DATABASE_SETUP.md)** for complete details.
+
+Quick setup:
+```bash
+# 1. Ensure PostgreSQL is running
+# 2. Update .env with your PostgreSQL credentials
+# 3. Run the application
+make run
+
+# The app will automatically:
+# - Create 'booking_db' database
+# - Create 'bookings' and 'booking_seats' tables
+# - Create all necessary indexes
+```
 
 ### Common Commands
 
@@ -136,7 +159,7 @@ make help              # Show all commands
 
 ## 📊 Test Coverage
 
-Current coverage: **59.7%**
+Current coverage: **68.4%** (15 tests total, 13 pass, 2 skip)
 
 ```bash
 make test-coverage     # Generates coverage.html
@@ -146,6 +169,9 @@ make test-coverage     # Generates coverage.html
 - ✅ `TestBookTickets_Success` - Happy path
 - ✅ `TestBookTickets_EventNotFound` - Error handling
 - ✅ `TestBookTickets_ShowtimeMismatch` - Validation
+- ✅ `TestCreateBooking` - HTTP handler tests (10 tests)
+- ✅ `TestEnsureDatabaseExists` - Database creation (integration)
+- ✅ `TestCreateBookingSchema` - Schema creation (integration)
 
 ## 🔧 Configuration
 
@@ -197,7 +223,8 @@ The main booking function implements:
 
 - **[QUICK_START.md](./QUICK_START.md)** - Get started in 5 minutes
 - **[TDD_GUIDE.md](./TDD_GUIDE.md)** - Learn the TDD process
-- **[API_DOCUMENTATION.md](../event-api/API_DOCUMENTATION.md)** - Event API reference
+- **[API_DOCUMENTATION.md](./API_DOCUMENTATION.md)** - REST API endpoints reference
+- **[client.http](./client.http)** - HTTP request examples
 
 ## 🚦 Running Tests
 

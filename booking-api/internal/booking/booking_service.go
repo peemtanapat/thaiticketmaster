@@ -73,7 +73,7 @@ func (s *BookingService) BookTickets(ctx context.Context, req BookingRequest) er
 		return fmt.Errorf("failed to get event: %w", err)
 	}
 
-	if err := s.validateShowtime(req.Showtime, event.Showtime); err != nil {
+	if err := s.validateShowtimeInEvent(req.Showtime, event.ShowDateTimes); err != nil {
 		return err
 	}
 
@@ -92,19 +92,30 @@ func (s *BookingService) BookTickets(ctx context.Context, req BookingRequest) er
 
 // Event represents the event data from event-api
 type Event struct {
-	ID       string    `json:"id"`
-	Name     string    `json:"name"`
-	Showtime time.Time `json:"showtime"`
-	Venue    string    `json:"venue"`
-} // validateShowtime checks if the booking showtime matches the event showtime
-func (s *BookingService) validateShowtime(bookingShowtime, eventShowtime time.Time) error {
-	// Compare times (truncate to seconds to avoid microsecond differences)
-	if !bookingShowtime.Truncate(time.Second).Equal(eventShowtime.Truncate(time.Second)) {
-		return fmt.Errorf("showtime mismatch: booking=%s, event=%s",
-			bookingShowtime.Format(time.RFC3339),
-			eventShowtime.Format(time.RFC3339))
+	ID            int64          `json:"id"`
+	Name          string         `json:"name"`
+	ShowDateTimes []FlexibleTime `json:"showDateTimes"`
+	Location      string         `json:"location"`
+}
+
+// validateShowtimeInEvent checks if the booking showtime exists in the event's showtimes
+func (s *BookingService) validateShowtimeInEvent(bookingShowtime time.Time, eventShowtimes []FlexibleTime) error {
+	if len(eventShowtimes) == 0 {
+		return fmt.Errorf("event has no showtimes available")
 	}
-	return nil
+
+	// Truncate to seconds to avoid microsecond differences
+	bookingTime := bookingShowtime.Truncate(time.Second)
+
+	for _, eventShowtime := range eventShowtimes {
+		if bookingTime.Equal(eventShowtime.Time.Truncate(time.Second)) {
+			return nil // Found matching showtime
+		}
+	}
+
+	// No matching showtime found
+	return fmt.Errorf("showtime %s not available for this event",
+		bookingShowtime.Format(time.RFC3339))
 }
 
 // validateBookingRequest validates the booking request

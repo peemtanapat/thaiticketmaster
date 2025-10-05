@@ -20,8 +20,8 @@ func main() {
 	// Load configuration from environment variables
 	dbHost := getEnv("DB_HOST", "localhost")
 	dbPort := getEnv("DB_PORT", "5432")
-	dbUser := getEnv("DB_USER", "postgres")
-	dbPassword := getEnv("DB_PASSWORD", "postgres")
+	dbUser := getEnv("DB_USER", "admin")
+	dbPassword := getEnv("DB_PASSWORD", "admin")
 	dbName := getEnv("DB_NAME", "booking_db")
 
 	redisHost := getEnv("REDIS_HOST", "localhost")
@@ -29,6 +29,12 @@ func main() {
 
 	eventAPIURL := getEnv("EVENT_API_URL", "http://localhost:8080")
 	serverPort := getEnv("SERVER_PORT", "8081")
+
+	// Ensure database exists (create if not exists)
+	log.Println("Checking database existence...")
+	if err := ensureDatabaseExists(dbHost, dbPort, dbUser, dbPassword, dbName); err != nil {
+		log.Fatalf("Failed to ensure database exists: %v", err)
+	}
 
 	// Initialize database connection
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
@@ -42,9 +48,14 @@ func main() {
 
 	// Test database connection
 	if err := db.Ping(); err != nil {
-		log.Printf("Warning: Failed to ping database: %v", err)
-	} else {
-		log.Println("Successfully connected to database")
+		log.Fatalf("Failed to ping database: %v", err)
+	}
+	log.Println("Successfully connected to database")
+
+	// Create/verify database schema (tables, indexes)
+	log.Println("Creating/verifying database schema...")
+	if err := createBookingSchema(db); err != nil {
+		log.Fatalf("Failed to create database schema: %v", err)
 	}
 
 	// Initialize Redis client
@@ -79,8 +90,28 @@ func main() {
 		w.Write([]byte(`{"status":"healthy"}`))
 	})
 
-	// TODO: Add booking endpoints here
-	_ = bookingService // Use the service in actual endpoints
+	// Initialize booking handler
+	bookingHandler := booking.NewBookingHandler(bookingService)
+
+	// Booking endpoints
+	mux.HandleFunc("/api/v1/bookings", bookingHandler.CreateBooking)
+	mux.HandleFunc("/api/v1/bookings/", func(w http.ResponseWriter, r *http.Request) {
+		// Route to appropriate handler based on method
+		switch r.Method {
+		case http.MethodGet:
+			bookingHandler.GetBooking(w, r)
+		case http.MethodDelete:
+			bookingHandler.CancelBooking(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	log.Println("Registered endpoints:")
+	log.Println("  GET  /health")
+	log.Println("  POST /api/v1/bookings")
+	log.Println("  GET  /api/v1/bookings/{id}")
+	log.Println("  DELETE /api/v1/bookings/{id}")
 
 	server := &http.Server{
 		Addr:         ":" + serverPort,

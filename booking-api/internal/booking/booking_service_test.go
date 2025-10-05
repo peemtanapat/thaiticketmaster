@@ -24,12 +24,12 @@ func TestBookTickets_Success(t *testing.T) {
 		assert.Equal(t, "/api/v1/events/event-123", r.URL.Path)
 		assert.Equal(t, "GET", r.Method)
 
-		// Return a valid event with showtime
+		// Return a valid event with showtime (matching event-api format)
 		event := map[string]interface{}{
-			"id":       "event-123",
-			"name":     "Concert 2025",
-			"showtime": "2025-10-10T19:00:00Z",
-			"venue":    "Stadium",
+			"id":            123,
+			"name":          "Concert 2025",
+			"showDateTimes": []string{"2025-10-10T19:00:00Z"},
+			"location":      "Stadium",
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -94,10 +94,10 @@ func TestBookTickets_ShowtimeMismatch(t *testing.T) {
 	// Mock event-api with different showtime
 	eventAPIServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		event := map[string]interface{}{
-			"id":       "event-123",
-			"name":     "Concert 2025",
-			"showtime": "2025-10-10T19:00:00Z", // Event showtime
-			"venue":    "Stadium",
+			"id":            123,
+			"name":          "Concert 2025",
+			"showDateTimes": []string{"2025-10-10T19:00:00Z"}, // Event showtime
+			"location":      "Stadium",
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -120,7 +120,8 @@ func TestBookTickets_ShowtimeMismatch(t *testing.T) {
 
 	// Assert: Should fail when showtime doesn't match
 	require.Error(t, err, "BookTickets should fail when showtime doesn't match")
-	assert.Contains(t, err.Error(), "showtime mismatch")
+	assert.Contains(t, err.Error(), "showtime")
+	assert.Contains(t, err.Error(), "not available")
 }
 
 // TestBookTickets_WithTransaction tests that DB transaction is used

@@ -4,7 +4,30 @@
 
 ### Prerequisites
 - Go 1.20+ installed
+- PostgreSQL 12+ running
+- Redis running
 - Make installed (optional, but recommended)
+
+### Step 0: Database Setup (Automatic!)
+
+**Good news:** The application automatically creates the database and schema on startup!
+
+```bash
+# 1. Ensure PostgreSQL is running
+# 2. Copy environment variables
+cp .env.example .env
+
+# 3. Update .env with your PostgreSQL credentials
+# DB_HOST=localhost
+# DB_PORT=5432
+# DB_USER=admin
+# DB_PASSWORD=admin
+# DB_NAME=booking_db
+
+# That's it! The app will create the database automatically.
+```
+
+See **[DATABASE_SETUP.md](./DATABASE_SETUP.md)** for complete details.
 
 ### Step 1: Run Tests (TDD Verification)
 
@@ -29,7 +52,30 @@ This creates `bin/booking-api` executable.
 make test-coverage
 ```
 
-Opens `coverage.html` showing 59.7% test coverage.
+Opens `coverage.html` showing 68.4% test coverage (15 tests).
+
+### Step 4: Run the Application
+
+```bash
+make run
+```
+
+The application will:
+1. ✅ Check if database exists
+2. ✅ Create database if not exists
+3. ✅ Create tables and indexes
+4. ✅ Start the server on port 8081
+
+Expected console output:
+```
+Checking database existence...
+Database 'booking_db' does not exist. Creating...
+Successfully created database 'booking_db'
+Successfully connected to database
+Creating/verifying database schema...
+Successfully created/verified database schema
+Starting booking-api server on port 8081
+```
 
 ## 🧪 TDD Demonstration
 
@@ -74,13 +120,25 @@ make clean             # Clean build artifacts
 
 ## 📊 Test Results
 
+**15 tests total: 13 pass, 2 skip** ✅
+
 ```
+# Core Service Tests
 ✅ TestBookTickets_Success           PASS
 ✅ TestBookTickets_EventNotFound     PASS
 ✅ TestBookTickets_ShowtimeMismatch  PASS
 ⏭️  TestBookTickets_WithTransaction  SKIP (for future enhancement)
 ⏭️  TestBookTickets_WithDistributedLock SKIP (for future enhancement)
+
+# HTTP Handler Tests
+✅ TestCreateBooking (10 tests)      PASS
+
+# Database Tests
+✅ TestEnsureDatabaseExists          PASS (integration)
+✅ TestCreateBookingSchema           PASS (integration)
 ```
+
+**Coverage: 68.4%** 🎯
 
 ## 🎯 What Was Implemented (TDD)
 
