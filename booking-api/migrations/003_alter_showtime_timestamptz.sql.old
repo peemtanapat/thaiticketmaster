@@ -1,0 +1,54 @@
+-- ============================================================================
+-- Migration: Convert showtime columns to TIMESTAMPTZ (UTC aware)
+-- Description: Alters bookings.showtime and event_seats.showtime from TIMESTAMP
+--              WITHOUT TIME ZONE to TIMESTAMP WITH TIME ZONE. Existing naive
+--              values are assumed to already represent UTC.
+-- Created: 2025-10-06
+-- ============================================================================
+
+-- Safety check: Only proceed if columns are currently without time zone
+DO $$
+BEGIN
+    -- bookings.showtime
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'bookings'
+          AND column_name = 'showtime'
+          AND data_type = 'timestamp without time zone'
+    ) THEN
+        RAISE NOTICE 'Altering bookings.showtime to TIMESTAMPTZ...';
+        ALTER TABLE bookings
+            ALTER COLUMN showtime TYPE TIMESTAMPTZ
+            USING (showtime AT TIME ZONE 'UTC');
+        RAISE NOTICE 'bookings.showtime altered.';
+    ELSE
+        RAISE NOTICE 'bookings.showtime already TIMESTAMPTZ or column missing.';
+    END IF;
+
+    -- event_seats.showtime
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'event_seats'
+          AND column_name = 'showtime'
+          AND data_type = 'timestamp without time zone'
+    ) THEN
+        RAISE NOTICE 'Altering event_seats.showtime to TIMESTAMPTZ...';
+        ALTER TABLE event_seats
+            ALTER COLUMN showtime TYPE TIMESTAMPTZ
+            USING (showtime AT TIME ZONE 'UTC');
+        RAISE NOTICE 'event_seats.showtime altered.';
+    ELSE
+        RAISE NOTICE 'event_seats.showtime already TIMESTAMPTZ or column missing.';
+    END IF;
+END$$;
+
+-- Optional: Recreate index if planner stats change significantly (usually not needed)
+-- CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_event_seats_event_showtime_tz ON event_seats(event_id, showtime);
+
+-- Verification queries (comment out in production pipelines)
+-- SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'bookings' AND column_name = 'showtime';
+-- SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'event_seats' AND column_name = 'showtime';
+
+-- ============================================================================
+-- Migration Complete
+-- ============================================================================

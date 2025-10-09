@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,7 +23,7 @@ class EventServiceIntegrationTest extends BaseIntegrationTest {
   private EventService eventService;
 
   private Category testCategory;
-  private LocalDateTime futureDate;
+  private OffsetDateTime futureDate;
   private LocalDateTime pastDate;
 
   @BeforeEach
@@ -31,7 +32,7 @@ class EventServiceIntegrationTest extends BaseIntegrationTest {
     testCategory = new Category("Concert", "Music concerts and shows");
     testCategory = categoryRepository.save(testCategory);
 
-    futureDate = LocalDateTime.now().plusDays(30);
+    futureDate = OffsetDateTime.now().plusDays(30);
     pastDate = LocalDateTime.now().minusDays(1);
   }
 

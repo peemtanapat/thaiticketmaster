@@ -3,6 +3,7 @@ package dev.peemtanapat.thaiticketmaster.event_api.event;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 public class EventUpdateRequest {
@@ -12,7 +13,7 @@ public class EventUpdateRequest {
 
   private Long categoryId;
 
-  private List<LocalDateTime> showDateTimes;
+  private List<OffsetDateTime> showDateTimes;
 
   @Size(max = 500, message = "Location must not exceed 500 characters")
   private String location;
@@ -52,11 +53,11 @@ public class EventUpdateRequest {
     this.categoryId = categoryId;
   }
 
-  public List<LocalDateTime> getShowDateTimes() {
+  public List<OffsetDateTime> getShowDateTimes() {
     return showDateTimes;
   }
 
-  public void setShowDateTimes(List<LocalDateTime> showDateTimes) {
+  public void setShowDateTimes(List<OffsetDateTime> showDateTimes) {
     this.showDateTimes = showDateTimes;
   }
 

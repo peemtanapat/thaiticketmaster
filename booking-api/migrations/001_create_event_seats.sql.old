@@ -1,0 +1,283 @@
+-- ============================================================================
+-- Migration: Create Event Seats Table and Pre-populate Tickets
+-- Description: Creates event_seats table for pre-created seat inventory
+--              and inserts 20 seats for events 1 and 2
+-- Created: 2025-10-06
+-- ============================================================================
+
+-- ============================================================================
+-- Step 1: Create event_seats table
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS event_seats (
+    id SERIAL PRIMARY KEY,
+    event_id VARCHAR(255) NOT NULL,
+    showtime TIMESTAMPTZ NOT NULL,
+    seat_id VARCHAR(50) NOT NULL,
+    zone VARCHAR(50) NOT NULL DEFAULT 'Standard',
+    row_number VARCHAR(10),
+    seat_number INTEGER,
+    price DECIMAL(10, 2) NOT NULL DEFAULT 1000.00,
+    status VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE',
+    booking_id VARCHAR(255),
+    reserved_at TIMESTAMP,
+    reserved_until TIMESTAMP,
+    sold_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Constraints
+    CONSTRAINT unique_seat_per_showtime UNIQUE (event_id, showtime, seat_id),
+    CONSTRAINT valid_status CHECK (status IN ('AVAILABLE', 'RESERVED', 'SOLD', 'BLOCKED')),
+    CONSTRAINT valid_zone CHECK (zone IN ('VIP', 'Premium', 'Standard', 'Balcony', 'Standing'))
+);
+
+-- ============================================================================
+-- Step 2: Create indexes for performance
+-- ============================================================================
+CREATE INDEX IF NOT EXISTS idx_event_seats_event_showtime 
+    ON event_seats(event_id, showtime);
+
+CREATE INDEX IF NOT EXISTS idx_event_seats_status 
+    ON event_seats(status);
+
+CREATE INDEX IF NOT EXISTS idx_event_seats_booking_id 
+    ON event_seats(booking_id) 
+    WHERE booking_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_event_seats_zone 
+    ON event_seats(zone);
+
+CREATE INDEX IF NOT EXISTS idx_event_seats_reserved_until 
+    ON event_seats(reserved_until) 
+    WHERE status = 'RESERVED';
+
+-- ============================================================================
+-- Step 3: Create function to check if seats exist
+-- ============================================================================
+CREATE OR REPLACE FUNCTION seats_exist_for_event(p_event_id VARCHAR, p_showtime TIMESTAMPTZ)
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM event_seats 
+        WHERE event_id = p_event_id 
+        AND showtime = p_showtime
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================================================================
+-- Step 4: Create function to insert seats for an event
+-- ============================================================================
+CREATE OR REPLACE FUNCTION create_seats_for_event(
+    p_event_id VARCHAR,
+    p_showtime TIMESTAMPTZ,
+    p_total_seats INTEGER DEFAULT 20
+)
+RETURNS INTEGER AS $$
+DECLARE
+    v_row_letter CHAR(1);
+    v_seat_num INTEGER;
+    v_zone VARCHAR(50);
+    v_price DECIMAL(10, 2);
+    v_inserted_count INTEGER := 0;
+BEGIN
+    -- Check if seats already exist for this event and showtime
+    IF seats_exist_for_event(p_event_id, p_showtime) THEN
+        RAISE NOTICE 'Seats already exist for event % at showtime %. Skipping insertion.', 
+            p_event_id, p_showtime;
+        RETURN 0;
+    END IF;
+
+    -- Insert seats based on row and zone logic
+    FOR i IN 1..p_total_seats LOOP
+        -- Determine row letter (A, B, C, D...)
+        v_row_letter := CHR(65 + ((i - 1) / 5)); -- A=65, 5 seats per row
+        v_seat_num := ((i - 1) % 5) + 1;
+
+        -- Determine zone and price based on row
+        CASE v_row_letter
+            WHEN 'A' THEN 
+                v_zone := 'VIP';
+                v_price := 2000.00;
+            WHEN 'B' THEN 
+                v_zone := 'Premium';
+                v_price := 1500.00;
+            ELSE 
+                v_zone := 'Standard';
+                v_price := 1000.00;
+        END CASE;
+
+        -- Insert seat
+        INSERT INTO event_seats (
+            event_id, 
+            showtime, 
+            seat_id, 
+            zone, 
+            row_number, 
+            seat_number, 
+            price, 
+            status
+        ) VALUES (
+            p_event_id,
+            p_showtime,
+            v_row_letter || v_seat_num,
+            v_zone,
+            v_row_letter,
+            v_seat_num,
+            v_price,
+            'AVAILABLE'
+        );
+        
+        v_inserted_count := v_inserted_count + 1;
+    END LOOP;
+
+    RAISE NOTICE 'Successfully created % seats for event % at showtime %', 
+        v_inserted_count, p_event_id, p_showtime;
+    
+    RETURN v_inserted_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================================================================
+-- Step 5: Pre-populate seats for Event 1 and Event 2
+-- ============================================================================
+
+DO $$
+DECLARE
+    v_event1_showtime TIMESTAMPTZ := '2025-10-04 19:00:00+07:00';
+    v_event2_showtime TIMESTAMPTZ := '2025-10-11 18:00:00+07:00';
+    v_count INTEGER;
+BEGIN
+    RAISE NOTICE '========================================';
+    RAISE NOTICE 'Starting seat pre-population...';
+    RAISE NOTICE '========================================';
+
+    -- Create seats for Event 1
+    RAISE NOTICE 'Creating seats for Event 1...';
+    v_count := create_seats_for_event('1', v_event1_showtime, 20);
+    RAISE NOTICE 'Event 1: % seats created', v_count;
+
+    -- Create seats for Event 2
+    RAISE NOTICE 'Creating seats for Event 2...';
+    v_count := create_seats_for_event('2', v_event2_showtime, 20);
+    RAISE NOTICE 'Event 2: % seats created', v_count;
+
+    RAISE NOTICE '========================================';
+    RAISE NOTICE 'Seat pre-population completed!';
+    RAISE NOTICE '========================================';
+END $$;
+
+-- ============================================================================
+-- Step 6: Verify the insertion
+-- ============================================================================
+
+-- Show summary of created seats
+SELECT 
+    event_id,
+    showtime,
+    zone,
+    COUNT(*) as total_seats,
+    COUNT(*) FILTER (WHERE status = 'AVAILABLE') as available_seats,
+    SUM(price) as total_value
+FROM event_seats
+WHERE event_id IN ('1', '2')
+GROUP BY event_id, showtime, zone
+ORDER BY event_id, zone;
+
+-- Show sample of created seats
+SELECT 
+    event_id,
+    showtime,
+    seat_id,
+    zone,
+    row_number,
+    seat_number,
+    price,
+    status
+FROM event_seats
+WHERE event_id IN ('1', '2')
+ORDER BY event_id, seat_id
+LIMIT 10;
+
+-- ============================================================================
+-- Step 7: Create helper views for common queries
+-- ============================================================================
+
+-- View: Available seats by event
+CREATE OR REPLACE VIEW v_available_seats AS
+SELECT 
+    event_id,
+    showtime,
+    seat_id,
+    zone,
+    row_number,
+    seat_number,
+    price,
+    status
+FROM event_seats
+WHERE status = 'AVAILABLE'
+ORDER BY event_id, showtime, row_number, seat_number;
+
+-- View: Seat inventory summary
+CREATE OR REPLACE VIEW v_seat_inventory AS
+SELECT 
+    event_id,
+    showtime,
+    zone,
+    COUNT(*) as total_seats,
+    COUNT(*) FILTER (WHERE status = 'AVAILABLE') as available,
+    COUNT(*) FILTER (WHERE status = 'RESERVED') as reserved,
+    COUNT(*) FILTER (WHERE status = 'SOLD') as sold,
+    COUNT(*) FILTER (WHERE status = 'BLOCKED') as blocked,
+    MIN(price) as min_price,
+    MAX(price) as max_price,
+    AVG(price) as avg_price
+FROM event_seats
+GROUP BY event_id, showtime, zone
+ORDER BY event_id, showtime, zone;
+
+-- ============================================================================
+-- Step 8: Create trigger for updated_at timestamp
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION update_event_seats_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_event_seats_updated_at
+    BEFORE UPDATE ON event_seats
+    FOR EACH ROW
+    EXECUTE FUNCTION update_event_seats_timestamp();
+
+-- ============================================================================
+-- Migration Complete!
+-- ============================================================================
+
+COMMENT ON TABLE event_seats IS 'Pre-created seat inventory for all events and showtimes';
+COMMENT ON COLUMN event_seats.status IS 'Seat status: AVAILABLE, RESERVED (temp hold), SOLD, BLOCKED';
+COMMENT ON COLUMN event_seats.reserved_until IS 'Temporary reservation expiry (5-15 minutes)';
+COMMENT ON COLUMN event_seats.booking_id IS 'Reference to booking when seat is RESERVED or SOLD';
+
+-- Success message
+DO $$
+BEGIN
+    RAISE NOTICE '';
+    RAISE NOTICE '✅ Migration completed successfully!';
+    RAISE NOTICE '';
+    RAISE NOTICE '📊 Summary:';
+    RAISE NOTICE '   - event_seats table created';
+    RAISE NOTICE '   - 20 seats pre-created for Event 1';
+    RAISE NOTICE '   - 20 seats pre-created for Event 2';
+    RAISE NOTICE '   - Indexes created for performance';
+    RAISE NOTICE '   - Helper functions and views created';
+    RAISE NOTICE '';
+    RAISE NOTICE '🎫 Seat Layout:';
+    RAISE NOTICE '   - Row A (seats 1-5): VIP Zone - ฿2,000';
+    RAISE NOTICE '   - Row B (seats 1-5): Premium Zone - ฿1,500';
+    RAISE NOTICE '   - Row C-D (seats 1-5 each): Standard Zone - ฿1,000';
+    RAISE NOTICE '';
+END $$;

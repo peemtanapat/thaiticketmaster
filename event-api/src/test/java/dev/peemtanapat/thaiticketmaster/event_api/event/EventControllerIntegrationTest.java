@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 
 import static org.hamcrest.Matchers.*;
@@ -33,13 +34,13 @@ class EventControllerIntegrationTest extends BaseIntegrationTest {
   private ObjectMapper objectMapper;
 
   private Category testCategory;
-  private LocalDateTime futureDate;
+  private OffsetDateTime futureDate;
 
   @BeforeEach
   void setUp() {
     testCategory = new Category("Concert", "Music concerts");
     testCategory = categoryRepository.save(testCategory);
-    futureDate = LocalDateTime.now().plusDays(30);
+    futureDate = OffsetDateTime.now().plusDays(30);
   }
 
   // ========== GET ALL EVENTS TESTS ==========

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,8 +31,8 @@ public class Event implements Serializable {
   // Multiple show times in the same day can be stored as a list
   @ElementCollection(fetch = FetchType.EAGER)
   @CollectionTable(name = "event_show_times", joinColumns = @JoinColumn(name = "event_id"))
-  @Column(name = "show_datetime", nullable = false)
-  private List<LocalDateTime> showDateTimes = new ArrayList<>();
+  @Column(name = "show_datetime", nullable = false, columnDefinition = "TIMESTAMPTZ")
+  private List<OffsetDateTime> showDateTimes = new ArrayList<>();
 
   @Column(nullable = false, length = 500)
   private String location;
@@ -76,7 +77,7 @@ public class Event implements Serializable {
   public Event() {
   }
 
-  public Event(String name, Category category, List<LocalDateTime> showDateTimes,
+  public Event(String name, Category category, List<OffsetDateTime> showDateTimes,
       String location, LocalDateTime onSaleDateTime, BigDecimal ticketPrice,
       String detail, String condition, EventStatus eventStatus, String gateOpen) {
     this.name = name;
@@ -116,11 +117,11 @@ public class Event implements Serializable {
     this.category = category;
   }
 
-  public List<LocalDateTime> getShowDateTimes() {
+  public List<OffsetDateTime> getShowDateTimes() {
     return showDateTimes;
   }
 
-  public void setShowDateTimes(List<LocalDateTime> showDateTimes) {
+  public void setShowDateTimes(List<OffsetDateTime> showDateTimes) {
     // Create a new ArrayList to avoid Hibernate's persistent collection issues
     this.showDateTimes = new ArrayList<>();
 

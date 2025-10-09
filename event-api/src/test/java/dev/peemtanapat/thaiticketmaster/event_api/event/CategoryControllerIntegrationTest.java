@@ -147,7 +147,7 @@ class CategoryControllerIntegrationTest extends BaseIntegrationTest {
     Event event1 = new Event();
     event1.setName("Rock Concert");
     event1.setCategory(category);
-    event1.setShowDateTimes(java.util.Arrays.asList(java.time.LocalDateTime.now().plusDays(30)));
+    event1.setShowDateTimes(java.util.Arrays.asList(java.time.OffsetDateTime.now().plusDays(30)));
     event1.setLocation("Stadium");
     event1.setOnSaleDateTime(java.time.LocalDateTime.now().plusDays(1));
     event1.setTicketPrice(java.math.BigDecimal.valueOf(1500));
@@ -157,7 +157,7 @@ class CategoryControllerIntegrationTest extends BaseIntegrationTest {
     Event event2 = new Event();
     event2.setName("Pop Concert");
     event2.setCategory(category);
-    event2.setShowDateTimes(java.util.Arrays.asList(java.time.LocalDateTime.now().plusDays(45)));
+    event2.setShowDateTimes(java.util.Arrays.asList(java.time.OffsetDateTime.now().plusDays(45)));
     event2.setLocation("Arena");
     event2.setOnSaleDateTime(java.time.LocalDateTime.now().plusDays(2));
     event2.setTicketPrice(java.math.BigDecimal.valueOf(2000));

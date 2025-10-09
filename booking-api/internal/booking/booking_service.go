@@ -57,6 +57,9 @@ func NewBookingServiceWithDefaults(db *sql.DB, redisClient interface{}, eventAPI
 // 3. Validate booking rules (check event exists and showtime matches)
 // 4. Commit transaction on success
 func (s *BookingService) BookTickets(ctx context.Context, req BookingRequest) error {
+	// Normalize showtime to UTC truncated to second to avoid sub-second mismatch
+	req.Showtime = req.Showtime.UTC().Truncate(time.Second)
+
 	// Step 1: Acquire distributed lock
 	lockKey := fmt.Sprintf("booking:lock:%s", req.EventID)
 	if err := s.locker.AcquireLock(ctx, lockKey, s.lockTTL); err != nil {
@@ -110,7 +113,13 @@ func (s *BookingService) BookTickets(ctx context.Context, req BookingRequest) er
 		return fmt.Errorf("failed to create booking: %w", err)
 	}
 
-	// Step 6: Commit transaction on success
+	// Step 6: Update event_seats table (mark seats as SOLD)
+	// This happens within the same transaction for atomicity
+	if err := s.repository.UpdateEventSeatsStatus(ctx, tx, req.EventID, req.Showtime, req.SeatIDs, booking.BookingID, "SOLD"); err != nil {
+		return fmt.Errorf("failed to update event seats status: %w", err)
+	}
+
+	// Step 7: Commit transaction on success
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("failed to commit transaction: %w", err)
 	}

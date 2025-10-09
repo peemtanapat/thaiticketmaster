@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -49,7 +50,7 @@ class EventControllerTest {
     testEventDTO.setId(1L);
     testEventDTO.setName("Test Concert");
     testEventDTO.setCategory(testCategoryDTO);
-    testEventDTO.setShowDateTimes(Arrays.asList(LocalDateTime.now().plusDays(30)));
+    testEventDTO.setShowDateTimes(Arrays.asList(OffsetDateTime.now().plusDays(30)));
     testEventDTO.setLocation("Test Venue");
     testEventDTO.setOnSaleDateTime(LocalDateTime.now().plusDays(1));
     testEventDTO.setTicketPrice(new BigDecimal("1500.00"));
@@ -61,7 +62,7 @@ class EventControllerTest {
     createRequest = new EventCreateRequest();
     createRequest.setName("New Concert");
     createRequest.setCategoryId(1L);
-    createRequest.setShowDateTimes(Arrays.asList(LocalDateTime.now().plusDays(30)));
+    createRequest.setShowDateTimes(Arrays.asList(OffsetDateTime.now().plusDays(30)));
     createRequest.setLocation("New Venue");
     createRequest.setOnSaleDateTime(LocalDateTime.now().plusDays(1));
     createRequest.setTicketPrice(new BigDecimal("2000.00"));

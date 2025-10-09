@@ -4,11 +4,11 @@ spring:
 
   datasource:
     # url: jdbc:postgresql://postgresql.event-api.svc.cluster.local:5432/event-db
-    url: jdbc:postgresql://localhost:5432/event-db
+    url: jdbc:postgresql://localhost:5432/event_db
     # username: eventuser
     # password: eventpass123
-    username: admin
-    password: admin
+    username: postgres
+    password: postgres
     driver-class-name: org.postgresql.Driver
 
   # Redis configuration

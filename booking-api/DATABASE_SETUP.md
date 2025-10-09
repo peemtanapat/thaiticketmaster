@@ -111,8 +111,8 @@ CREATE TABLE booking_seats (
 # Database Configuration
 DB_HOST=localhost        # PostgreSQL host
 DB_PORT=5432            # PostgreSQL port
-DB_USER=admin           # PostgreSQL user (must have CREATE DATABASE permission)
-DB_PASSWORD=admin       # PostgreSQL password
+DB_USER=postgres        # PostgreSQL user (must have CREATE DATABASE permission)
+DB_PASSWORD=postgres    # PostgreSQL password
 DB_NAME=booking_db      # Database name to create/use
 ```
 

@@ -1,0 +1,112 @@
+-- ============================================================================
+-- Migration: Add timestamp columns to event_seats table
+-- Description: Adds reserved_at, reserved_until, and sold_at columns
+--              to support seat reservation workflow
+-- Created: 2025-10-06
+-- ============================================================================
+
+-- Check if event_seats table exists
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'event_seats'
+    ) THEN
+        RAISE NOTICE 'event_seats table does not exist. Please run 001_create_event_seats_simple.sql first.';
+    ELSE
+        RAISE NOTICE 'event_seats table found. Adding missing columns...';
+    END IF;
+END $$;
+
+-- Add reserved_at column if it doesn't exist
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT FROM information_schema.columns 
+        WHERE table_name = 'event_seats' 
+        AND column_name = 'reserved_at'
+    ) THEN
+        ALTER TABLE event_seats ADD COLUMN reserved_at TIMESTAMPTZ;
+        RAISE NOTICE 'Added column: reserved_at';
+    ELSE
+        RAISE NOTICE 'Column reserved_at already exists';
+    END IF;
+END $$;
+
+-- Add reserved_until column if it doesn't exist
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT FROM information_schema.columns 
+        WHERE table_name = 'event_seats' 
+        AND column_name = 'reserved_until'
+    ) THEN
+        ALTER TABLE event_seats ADD COLUMN reserved_until TIMESTAMPTZ;
+        RAISE NOTICE 'Added column: reserved_until';
+        
+        -- Create index for reserved_until (for cleanup queries)
+        CREATE INDEX IF NOT EXISTS idx_event_seats_reserved_until 
+            ON event_seats(reserved_until) 
+            WHERE status = 'RESERVED';
+        RAISE NOTICE 'Created index on reserved_until';
+    ELSE
+        RAISE NOTICE 'Column reserved_until already exists';
+    END IF;
+END $$;
+
+-- Add sold_at column if it doesn't exist
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT FROM information_schema.columns 
+        WHERE table_name = 'event_seats' 
+        AND column_name = 'sold_at'
+    ) THEN
+        ALTER TABLE event_seats ADD COLUMN sold_at TIMESTAMPTZ;
+        RAISE NOTICE 'Added column: sold_at';
+    ELSE
+        RAISE NOTICE 'Column sold_at already exists';
+    END IF;
+END $$;
+
+-- Verify the schema
+DO $$
+DECLARE
+    v_column_count INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO v_column_count
+    FROM information_schema.columns 
+    WHERE table_name = 'event_seats'
+    AND column_name IN ('reserved_at', 'reserved_until', 'sold_at');
+    
+    IF v_column_count = 3 THEN
+        RAISE NOTICE '✅ All timestamp columns exist!';
+    ELSE
+        RAISE WARNING '⚠️  Some columns are missing. Expected 3, found %', v_column_count;
+    END IF;
+END $$;
+
+-- Show current schema
+SELECT 
+    column_name, 
+    data_type, 
+    is_nullable,
+    column_default
+FROM information_schema.columns 
+WHERE table_name = 'event_seats'
+ORDER BY ordinal_position;
+
+-- Success message
+DO $$
+BEGIN
+    RAISE NOTICE '';
+    RAISE NOTICE '====================================';
+    RAISE NOTICE '✅ Migration completed successfully!';
+    RAISE NOTICE '====================================';
+    RAISE NOTICE '';
+    RAISE NOTICE '📊 Added columns:';
+    RAISE NOTICE '   - reserved_at: Timestamp when seat was reserved';
+    RAISE NOTICE '   - reserved_until: Reservation expiry (for cleanup)';
+    RAISE NOTICE '   - sold_at: Timestamp when seat was sold';
+    RAISE NOTICE '';
+END $$;

@@ -20,8 +20,8 @@ cp .env.example .env
 # 3. Update .env with your PostgreSQL credentials
 # DB_HOST=localhost
 # DB_PORT=5432
-# DB_USER=admin
-# DB_PASSWORD=admin
+# DB_USER=postgres
+# DB_PASSWORD=postgres
 # DB_NAME=booking_db
 
 # That's it! The app will create the database automatically.

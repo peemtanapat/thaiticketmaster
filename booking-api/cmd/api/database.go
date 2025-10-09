@@ -59,11 +59,11 @@ func createBookingSchema(db *sql.DB) error {
 		booking_id VARCHAR(255) UNIQUE NOT NULL,
 		event_id VARCHAR(255) NOT NULL,
 		user_id VARCHAR(255) NOT NULL,
-		showtime TIMESTAMP NOT NULL,
+		showtime TIMESTAMPTZ NOT NULL,
 		quantity INTEGER NOT NULL,
 		status VARCHAR(50) NOT NULL DEFAULT 'CONFIRMED',
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 	);
 
 	-- Create booking_seats table if not exists
@@ -71,7 +71,7 @@ func createBookingSchema(db *sql.DB) error {
 		id SERIAL PRIMARY KEY,
 		booking_id VARCHAR(255) NOT NULL,
 		seat_id VARCHAR(255) NOT NULL,
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY (booking_id) REFERENCES bookings(booking_id) ON DELETE CASCADE
 	);
 

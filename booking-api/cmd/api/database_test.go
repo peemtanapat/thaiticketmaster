@@ -27,9 +27,9 @@ func TestEnsureDatabaseExists(t *testing.T) {
 	// Arrange
 	host := getEnvOrDefault("DB_HOST", "localhost")
 	port := getEnvOrDefault("DB_PORT", "5432")
-	user := getEnvOrDefault("DB_USER", "admin")
-	password := getEnvOrDefault("DB_PASSWORD", "admin")
-	testDBName := "booking_api_test"
+	user := getEnvOrDefault("DB_USER", "postgres")
+	password := getEnvOrDefault("DB_PASSWORD", "postgres")
+	testDBName := "booking_db_test"
 
 	// Clean up: drop test database if exists
 	defer func() {
@@ -66,12 +66,12 @@ func TestCreateBookingSchema(t *testing.T) {
 	}
 
 	// Arrange
-	testDBName := "booking_api_schema_test"
+	testDBName := "booking_db_schema_test"
 
 	host := getEnvOrDefault("DB_HOST", "localhost")
 	port := getEnvOrDefault("DB_PORT", "5432")
-	user := getEnvOrDefault("DB_USER", "admin")
-	password := getEnvOrDefault("DB_PASSWORD", "admin")
+	user := getEnvOrDefault("DB_USER", "postgres")
+	password := getEnvOrDefault("DB_PASSWORD", "postgres")
 
 	// Clean up
 	defer func() {

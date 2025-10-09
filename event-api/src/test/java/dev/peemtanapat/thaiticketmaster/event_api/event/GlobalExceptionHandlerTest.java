@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 
 import static org.hamcrest.Matchers.*;
@@ -72,7 +73,7 @@ class GlobalExceptionHandlerTest {
     EventCreateRequest request = new EventCreateRequest();
     request.setName(""); // Invalid: blank
     request.setCategoryId(1L);
-    request.setShowDateTimes(Arrays.asList(LocalDateTime.now().plusDays(30)));
+    request.setShowDateTimes(Arrays.asList(OffsetDateTime.now().plusDays(30)));
     request.setLocation("Test Venue");
     request.setOnSaleDateTime(LocalDateTime.now().plusDays(1));
     request.setTicketPrice(new BigDecimal("1500.00"));
@@ -131,7 +132,7 @@ class GlobalExceptionHandlerTest {
     EventCreateRequest request = new EventCreateRequest();
     request.setName("Test Event");
     request.setCategoryId(1L);
-    request.setShowDateTimes(Arrays.asList(LocalDateTime.now().plusDays(30)));
+    request.setShowDateTimes(Arrays.asList(OffsetDateTime.now().plusDays(30)));
     request.setLocation("Test Venue");
     request.setOnSaleDateTime(LocalDateTime.now().plusDays(1));
     request.setTicketPrice(BigDecimal.ZERO); // Invalid: must be > 0
@@ -155,7 +156,7 @@ class GlobalExceptionHandlerTest {
     EventCreateRequest request = new EventCreateRequest();
     request.setName("A".repeat(201)); // Invalid: exceeds 200 characters
     request.setCategoryId(1L);
-    request.setShowDateTimes(Arrays.asList(LocalDateTime.now().plusDays(30)));
+    request.setShowDateTimes(Arrays.asList(OffsetDateTime.now().plusDays(30)));
     request.setLocation("Test Venue");
     request.setOnSaleDateTime(LocalDateTime.now().plusDays(1));
     request.setTicketPrice(new BigDecimal("1500.00"));

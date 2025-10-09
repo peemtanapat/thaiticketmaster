@@ -11,6 +11,7 @@ import org.springframework.data.redis.core.ValueOperations;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +58,7 @@ class EventServiceTest {
     testEvent = new Event(
         "Test Concert",
         testCategory,
-        Arrays.asList(LocalDateTime.now().plusDays(30)),
+        Arrays.asList(OffsetDateTime.now().plusDays(30)),
         "Test Venue",
         LocalDateTime.now().plusDays(1),
         new BigDecimal("1500.00"),
@@ -72,7 +73,7 @@ class EventServiceTest {
     createRequest = new EventCreateRequest();
     createRequest.setName("New Concert");
     createRequest.setCategoryId(1L);
-    createRequest.setShowDateTimes(Arrays.asList(LocalDateTime.now().plusDays(30)));
+    createRequest.setShowDateTimes(Arrays.asList(OffsetDateTime.now().plusDays(30)));
     createRequest.setLocation("New Venue");
     createRequest.setOnSaleDateTime(LocalDateTime.now().plusDays(1));
     createRequest.setTicketPrice(new BigDecimal("2000.00"));

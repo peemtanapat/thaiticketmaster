@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,7 +17,7 @@ class EventTest {
     // Arrange
     Category category = new Category("Concert", "Music concerts");
     category.setId(1L);
-    List<LocalDateTime> showTimes = Arrays.asList(LocalDateTime.now().plusDays(30));
+    List<OffsetDateTime> showTimes = Arrays.asList(OffsetDateTime.now().plusDays(30));
     LocalDateTime onSaleDate = LocalDateTime.now().plusDays(1);
     BigDecimal price = new BigDecimal("1500.00");
 
@@ -66,7 +67,7 @@ class EventTest {
     Event event = new Event();
     Category category = new Category("Sports", "Sports events");
     category.setId(2L);
-    List<LocalDateTime> showTimes = Arrays.asList(LocalDateTime.now().plusDays(15));
+    List<OffsetDateTime> showTimes = Arrays.asList(OffsetDateTime.now().plusDays(15));
     LocalDateTime onSaleDate = LocalDateTime.now();
     BigDecimal price = new BigDecimal("2000.00");
 
@@ -141,10 +142,10 @@ class EventTest {
   void multipleShowTimes_CanBeAdded() {
     // Arrange
     Event event = new Event();
-    List<LocalDateTime> showTimes = Arrays.asList(
-        LocalDateTime.now().plusDays(1),
-        LocalDateTime.now().plusDays(2),
-        LocalDateTime.now().plusDays(3));
+    List<OffsetDateTime> showTimes = Arrays.asList(
+        OffsetDateTime.now().plusDays(1),
+        OffsetDateTime.now().plusDays(2),
+        OffsetDateTime.now().plusDays(3));
 
     // Act
     event.setShowDateTimes(showTimes);

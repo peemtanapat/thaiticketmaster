@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,7 +24,7 @@ class EventDTOTest {
     testEvent = new Event(
         "Test Concert",
         testCategory,
-        Arrays.asList(LocalDateTime.now().plusDays(30)),
+        Arrays.asList(OffsetDateTime.now().plusDays(30)),
         "Test Venue",
         LocalDateTime.now().plusDays(1),
         new BigDecimal("1500.00"),
@@ -98,7 +99,7 @@ class EventDTOTest {
     EventDTO.CategoryDTO categoryDTO = new EventDTO.CategoryDTO();
     categoryDTO.setId(2L);
     categoryDTO.setName("Sports");
-    List<LocalDateTime> showTimes = Arrays.asList(LocalDateTime.now().plusDays(10));
+    List<OffsetDateTime> showTimes = Arrays.asList(OffsetDateTime.now().plusDays(10));
     LocalDateTime now = LocalDateTime.now();
 
     // Act

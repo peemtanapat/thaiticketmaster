@@ -35,8 +35,8 @@ Set environment variables for more verbose output:
 LOG_LEVEL=debug \
 DB_HOST=localhost \
 DB_PORT=5432 \
-DB_USER=admin \
-DB_PASSWORD=admin \
+DB_USER=postgres \
+DB_PASSWORD=postgres \
 DB_NAME=booking_db \
 REDIS_HOST=localhost \
 REDIS_PORT=6379 \
@@ -63,8 +63,8 @@ Create or update `.vscode/launch.json`:
         "LOG_LEVEL": "debug",
         "DB_HOST": "localhost",
         "DB_PORT": "5432",
-        "DB_USER": "admin",
-        "DB_PASSWORD": "admin",
+        "DB_USER": "postgres",
+        "DB_PASSWORD": "postgres",
         "DB_NAME": "booking_db",
         "REDIS_HOST": "localhost",
         "REDIS_PORT": "6379",
@@ -156,8 +156,8 @@ You can set these before running:
 # Database
 export DB_HOST=localhost
 export DB_PORT=5432
-export DB_USER=admin
-export DB_PASSWORD=admin
+export DB_USER=postgres
+export DB_PASSWORD=postgres
 export DB_NAME=booking_db
 
 # Redis

@@ -48,15 +48,15 @@ VALUES
    NOW(), 
    NOW());
 
--- Event show times
+-- Event show times (using TIMESTAMPTZ with explicit timezone)
 INSERT INTO event_show_times (event_id, show_datetime)
 VALUES 
-  -- ONE Fight Night 36 (show date: Saturday 4 October 2025)
-  ((SELECT id FROM events WHERE name = 'ONE Fight Night 36 : Prajanchai vs. Di Bella ll'), '2025-10-04 19:00:00'),
+  -- ONE Fight Night 36 (show date: Saturday 4 October 2025, 19:00 Bangkok time = UTC+7)
+  ((SELECT id FROM events WHERE name = 'ONE Fight Night 36 : Prajanchai vs. Di Bella ll'), '2025-10-04 19:00:00+07:00'),
   
-  -- MARIAH CAREY (show date: Saturday 11 October 2025)
-  ((SELECT id FROM events WHERE name = 'MARIAH CAREY The Celebration of Mimi'), '2025-10-11 18:00:00'),
+  -- MARIAH CAREY (show date: Saturday 11 October 2025, 18:00 Bangkok time = UTC+7)
+  ((SELECT id FROM events WHERE name = 'MARIAH CAREY The Celebration of Mimi'), '2025-10-11 18:00:00+07:00'),
   
-  -- KABUKI (show dates: Saturday 13 December 2025 - Sunday 14 December 2025)
-  ((SELECT id FROM events WHERE name = 'KABUKI Otokodate Hana No Yoshiwara By Ichikawa Danjuro XIII in Bangkok 2025'), '2025-12-13 19:00:00'),
-  ((SELECT id FROM events WHERE name = 'KABUKI Otokodate Hana No Yoshiwara By Ichikawa Danjuro XIII in Bangkok 2025'), '2025-12-14 19:00:00');
+  -- KABUKI (show dates: Saturday 13 December 2025 - Sunday 14 December 2025, 19:00 Bangkok time = UTC+7)
+  ((SELECT id FROM events WHERE name = 'KABUKI Otokodate Hana No Yoshiwara By Ichikawa Danjuro XIII in Bangkok 2025'), '2025-12-13 19:00:00+07:00'),
+  ((SELECT id FROM events WHERE name = 'KABUKI Otokodate Hana No Yoshiwara By Ichikawa Danjuro XIII in Bangkok 2025'), '2025-12-14 19:00:00+07:00');

@@ -3,6 +3,7 @@ package dev.peemtanapat.thaiticketmaster.event_api.event;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 public class EventDTO implements Serializable {
@@ -11,7 +12,7 @@ public class EventDTO implements Serializable {
   private Long id;
   private String name;
   private CategoryDTO category;
-  private List<LocalDateTime> showDateTimes;
+  private List<OffsetDateTime> showDateTimes;
   private String location;
   private LocalDateTime onSaleDateTime;
   private BigDecimal ticketPrice;
@@ -32,8 +33,9 @@ public class EventDTO implements Serializable {
     this.category = new CategoryDTO(event.getCategory());
     // Create a new ArrayList to avoid lazy initialization issues during
     // serialization
-    this.showDateTimes = event.getShowDateTimes() != null ? new java.util.ArrayList<>(event.getShowDateTimes())
-        : new java.util.ArrayList<>();
+    this.showDateTimes = event.getShowDateTimes() != null
+        ? new java.util.ArrayList<OffsetDateTime>(event.getShowDateTimes())
+        : new java.util.ArrayList<OffsetDateTime>();
     this.location = event.getLocation();
     this.onSaleDateTime = event.getOnSaleDateTime();
     this.ticketPrice = event.getTicketPrice();
@@ -70,11 +72,11 @@ public class EventDTO implements Serializable {
     this.category = category;
   }
 
-  public List<LocalDateTime> getShowDateTimes() {
+  public List<OffsetDateTime> getShowDateTimes() {
     return showDateTimes;
   }
 
-  public void setShowDateTimes(List<LocalDateTime> showDateTimes) {
+  public void setShowDateTimes(List<OffsetDateTime> showDateTimes) {
     this.showDateTimes = showDateTimes;
   }
 

@@ -60,3 +60,7 @@ func (r *noOpRepository) DeleteBooking(ctx context.Context, bookingID string) er
 func (r *noOpRepository) CheckSeatsAvailability(ctx context.Context, tx Transaction, eventID string, showtime time.Time, seatIDs []string) ([]string, error) {
 	return []string{}, nil // Return empty list (all seats available) for testing
 }
+
+func (r *noOpRepository) UpdateEventSeatsStatus(ctx context.Context, tx Transaction, eventID string, showtime time.Time, seatIDs []string, bookingID string, status string) error {
+	return nil // No-op for testing
+}
